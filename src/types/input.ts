@@ -1,3 +1,21 @@
+export const ENTITY_TYPE = {
+  REGULAR: 'REGULAR',
+  NUMBER: 'NUMBER',
+  DATE: 'DATE',
+} as const;
+
+export const ENTITY_CLASS = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  COMPOSITE: 'COMPOSITE',
+  PARAGRAPH: 'PARAGRAPH',
+  REGEX: 'REGEX',
+  CHECKBOX: 'CHECKBOX',
+  RELATION: 'RELATION',
+} as const;
+
+type ObjectValues<T> = T[keyof T];
+
 export interface Input {
   documents: Array<Document>; // pay attention to this property
 
@@ -55,21 +73,8 @@ export interface Entity {
   refs: Array<Entity['id']>; // refs is a list of parent entity ids. "article details" has 1 ref, namely the "article" entityId.
 }
 
-export enum EntityType {
-  REGULAR = 'REGULAR',
-  NUMBER = 'NUMBER',
-  DATE = 'DATE',
-}
-
-export enum EntityClass {
-  TEXT = 'TEXT',
-  IMAGE = 'IMAGE',
-  COMPOSITE = 'COMPOSITE',
-  PARAGRAPH = 'PARAGRAPH',
-  REGEX = 'REGEX',
-  CHECKBOX = 'CHECKBOX',
-  RELATION = 'RELATION',
-}
+export type EntityType = ObjectValues<typeof ENTITY_TYPE>;
+export type EntityClass = ObjectValues<typeof ENTITY_CLASS>;
 
 export interface Annotation {
   id: string;

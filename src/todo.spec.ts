@@ -1,11 +1,12 @@
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
+
+import type { Input } from './types/input';
 import inputJson from './input.json';
 import outputJson from './output.json';
-import { convertInput, sortAnnotations, sortEntities } from './todo';
+import { convertInput, sortAnnotations, sortEntities, validateOutput } from './todo';
+import { validOutputMock, invalidOutputMock, mockAnnotations, mockEntities } from './__mocks__/output.mock';
 
-import { Input, EntityClass, EntityType } from './types/input';
-
-describe.only('convertInput function', () => {
+describe('the convertInput function', () => {
   it('should have the right entities length after conversion', () => {
     const output = convertInput(inputJson as Input);
     expect(output.documents[0].entities.length).to.equal(14);
@@ -25,32 +26,43 @@ describe.only('convertInput function', () => {
   });
 });
 
-describe('sorting functions', () => {
-  const mockEntities = [
-    { id: '1', name: 'article total', type: EntityType.NUMBER, class: EntityClass.TEXT, children: [] },
-    { id: '2', name: 'article color', type: EntityType.REGULAR, class: EntityClass.TEXT, children: [] },
-    { id: '3', name: 'article', type: EntityType.REGULAR, class: EntityClass.RELATION, children: [] },
-  ];
-
-  const mockAnnotations = [
-    { id: 'a1', entity: { id: '1', name: 'article total' }, value: 394.68, index: 88, children: [] },
-    { id: 'a2', entity: { id: '2', name: 'article color' }, value: 'White', index: 96, children: [] },
-    { id: 'a3', entity: { id: '3', name: 'article' }, value: null, index: 72, children: [] },
-  ];
-
-  it('should sortEntities by "name"', () => {
+describe('the sorting functions sortEntities and sortAnnotations', () => {
+  it('should sort entities by "name" when sortEntities is called', () => {
     mockEntities.sort(sortEntities);
     expect(mockEntities.map((e) => e.name)).to.deep.equal(['article', 'article color', 'article total']);
   });
 
-  it('should sortAnnotations by index', () => {
+  it('should sort annotations by "index" when sortAnnotations is called', () => {
     mockAnnotations.sort(sortAnnotations);
     expect(mockAnnotations.map((a) => a.index)).to.deep.equal([72, 88, 96]);
   });
 });
 
-describe('convertEntity function', () => {});
-describe('convertAnnotation function', () => {});
+// BONUS: Write tests that validates the output json. Use the function you have written in "src/todo.ts".
 describe('validateOutput function', () => {
-  // BONUS: Write tests that validates the output json. Use the function you have written in "src/todo.ts".
+  it('should validate successfully for valid output', (done) => {
+    validateOutput(validOutputMock)
+      .then((result) => {
+        assert.isTrue(result);
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
+
+  it('should throw an error for invalid output', (done) => {
+    validateOutput(invalidOutputMock)
+      .then((result) => {
+        assert.isFalse(result);
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
+});
+
+describe('the convert functions convertEntity and convertAnnotation', () => {
+  // TODO: write  tests for the convert functions
 });

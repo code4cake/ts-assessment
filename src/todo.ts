@@ -1,5 +1,8 @@
-import { Annotation, Entity, Input } from './types/input';
-import { ConvertedAnnotation, ConvertedEntity, Output } from './types/output';
+// import _ from 'lodash';
+
+import type { Annotation, Entity, Input } from './types/input';
+import type { ConvertedAnnotation, ConvertedEntity, Output } from './types/output';
+import { OutputSchema } from './schemas/output.schema';
 
 interface EntityMap {
   [key: string]: ConvertedEntity;
@@ -8,12 +11,16 @@ interface AnnotationMap {
   [key: string]: ConvertedAnnotation;
 }
 
+// TODO: Convert Input to the Output structure. Do this in an efficient and generic way.
+// HINT: Make use of the helper library "lodash"
 export const convertInput = (input: Input): Output => {
   const documents = input.documents.map((document) => {
     const entityMap: EntityMap = {},
       annotationMap: AnnotationMap = {},
       annotations: ConvertedAnnotation[] = [];
 
+    // TODO: map the entities to the new structure and sort them based on the property "name"
+    // Make sure the nested children are also mapped and sorted
     document.entities.forEach((entity) => {
       entityMap[entity.id] = {
         ...{ id: entity.id, name: entity.name, type: entity.type, class: entity.class },
@@ -21,6 +28,8 @@ export const convertInput = (input: Input): Output => {
       };
     });
 
+    // TODO: map the annotations to the new structure and sort them based on the property "index"
+    // Make sure the nested children are also mapped and sorted
     document.annotations.forEach((annotation) => {
       annotationMap[annotation.id] = {
         ...{
@@ -58,6 +67,7 @@ export const convertInput = (input: Input): Output => {
   return { documents };
 };
 
+// HINT: you probably need to pass extra argument(s) to this function to make it performant
 const convertEntity = (entity: Entity, entityMap: EntityMap): ConvertedEntity => {
   entity.refs.forEach((refId: string) => {
     if (entityMap[refId]) {
@@ -70,6 +80,7 @@ const convertEntity = (entity: Entity, entityMap: EntityMap): ConvertedEntity =>
   return entityMap[entity.id];
 };
 
+// HINT: you probably need to pass extra argument(s) to this function to make it performant.
 const convertAnnotation = (annotation: Annotation, annotationMap: AnnotationMap): ConvertedAnnotation => {
   try {
     if (!annotationMap[annotation.id]) {
@@ -109,3 +120,14 @@ export const sortAnnotations = (annotationA: ConvertedAnnotation, annotationB: C
 };
 
 // BONUS: Create validation function that validates the result of "convertInput". Use yup as library to validate your result.
+export const validateOutput = (output: Output) => {
+  return OutputSchema.validate(output, { abortEarly: false })
+    .then(() => {
+      console.log('Validation successful!');
+      return true;
+    })
+    .catch((error) => {
+      console.error('Validation failed: ', error);
+      return false;
+    });
+};

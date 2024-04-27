@@ -1,10 +1,10 @@
-import { EntityClass, EntityType } from './input';
+import { EntityClass, EntityType, Entity } from './input';
 
 export interface Output {
   documents: Array<ConvertedDocument>;
 }
 
-interface ConvertedDocument {
+export interface ConvertedDocument {
   id: string;
   entities: ConvertedEntity[];
   annotations: ConvertedAnnotation[];
@@ -18,9 +18,11 @@ export interface ConvertedEntity {
   children: ConvertedEntity[]; // pay attention to this property
 }
 
+export type ConvertedEntityIdName = Pick<Entity, 'id' | 'name'>;
+
 export interface ConvertedAnnotation {
   id: string;
-  entity: { id: string; name: string }; // lightweight version of the entity
+  entity: ConvertedEntityIdName; // lightweight version of the entity
   value: string | number | null; // the value of the annotation
   index: number; // the startIndex of the first index of the list of indices. Namely indices[0].startIndex, if it exists. In case it's a group (indices = []), take the earliest index of the children.
   children: ConvertedAnnotation[]; // pay attention to this property
