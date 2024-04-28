@@ -3,6 +3,7 @@
 import type { Annotation, Entity, Input } from './types/input';
 import type { ConvertedAnnotation, ConvertedEntity, Output } from './types/output';
 import { OutputSchema } from './schemas/output.schema';
+import { logger } from './utils/logger';
 
 interface EntityMap {
   [key: string]: ConvertedEntity;
@@ -106,7 +107,7 @@ const convertAnnotation = (annotation: Annotation, annotationMap: AnnotationMap)
 
     return annotationMap[annotation.id];
   } catch (error) {
-    error instanceof Error && console.error(`Error converting annotation: ${error.message}`);
+    error instanceof Error && logger.error(`Error converting annotation: ${error.message}`);
     throw error;
   }
 };
@@ -123,11 +124,11 @@ export const sortAnnotations = (annotationA: ConvertedAnnotation, annotationB: C
 export const validateOutput = (output: Output) => {
   return OutputSchema.validate(output, { abortEarly: false })
     .then(() => {
-      console.log('Validation successful!');
+      logger.info('Validation successful!');
       return true;
     })
-    .catch(() => {
-      // console.error('Validation failed: ', error); // NOTE: uncomment to see validation failure details on tests
+    .catch((_err: unknown) => {
+      // logger.error('Validation failed: ', error); // NOTE: uncomment to see validation failure details on tests
       return false;
     });
 };
