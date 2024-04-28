@@ -1,4 +1,4 @@
-// import _ from 'lodash';
+import _ from 'lodash';
 
 import type { Annotation, Entity, Input } from './types/input';
 import type { ConvertedAnnotation, ConvertedEntity, Output } from './types/output';
@@ -15,45 +15,48 @@ interface AnnotationMap {
 // TODO: Convert Input to the Output structure. Do this in an efficient and generic way.
 // HINT: Make use of the helper library "lodash"
 export const convertInput = (input: Input): Output => {
-  const documents = input.documents.map((document) => {
+  const documents = _.map(input.documents, (document) => {
     const entityMap: EntityMap = {},
       annotationMap: AnnotationMap = {},
       annotations: ConvertedAnnotation[] = [];
 
     // TODO: map the entities to the new structure and sort them based on the property "name"
     // Make sure the nested children are also mapped and sorted
-    document.entities.forEach((entity) => {
+    _.forEach(document.entities, (entity) => {
       entityMap[entity.id] = {
-        ...{ id: entity.id, name: entity.name, type: entity.type, class: entity.class },
+        id: entity.id,
+        name: entity.name,
+        type: entity.type,
+        class: entity.class,
         children: [],
       };
     });
 
     // TODO: map the annotations to the new structure and sort them based on the property "index"
     // Make sure the nested children are also mapped and sorted
-    document.annotations.forEach((annotation) => {
-      annotationMap[annotation.id] = {
-        ...{
+    _.forEach(document.annotations, (annotation) => {
+      if (entityMap[annotation.entityId]) {
+        annotationMap[annotation.id] = {
           id: annotation.id,
           entity: {
             id: entityMap[annotation.entityId].id,
             name: entityMap[annotation.entityId].name,
           },
           value: annotation.value,
-          index: -1,
+          index: annotation.indices?.length ? annotation.indices[0].start : -1,
           children: [],
-        },
-      };
+        };
+      }
     });
 
-    const entities: ConvertedEntity[] = document.entities
-      .map((entity) => convertEntity(entity, entityMap))
-      .sort(sortEntities);
+    const entities = _.map(document.entities, (entity) => convertEntity(entity, entityMap)).sort(sortEntities);
 
-    document.annotations.forEach((annotation) => {
-      annotation.refs.length < 1
-        ? annotations.push(convertAnnotation(annotation, annotationMap))
-        : convertAnnotation(annotation, annotationMap);
+    _.forEach(document.annotations, (annotation) => {
+      if (annotation.refs.length === 0) {
+        annotations.push(convertAnnotation(annotation, annotationMap));
+      } else {
+        convertAnnotation(annotation, annotationMap);
+      }
     });
 
     annotations.sort(sortAnnotations);
@@ -119,6 +122,14 @@ export const sortEntities = (entityA: ConvertedEntity, entityB: ConvertedEntity)
 export const sortAnnotations = (annotationA: ConvertedAnnotation, annotationB: ConvertedAnnotation): number => {
   return annotationA.index - annotationB.index;
 };
+
+// export const sortEntities = (entities: ConvertedEntity[]): ConvertedEntity[] => {
+//   return _.sortBy(entities, 'name');
+// };
+
+// export const sortAnnotations = (annotations: ConvertedAnnotation[]): ConvertedAnnotation[] => {
+//   return _.sortBy(annotations, 'index');
+// };
 
 // BONUS: Create validation function that validates the result of "convertInput". Use yup as library to validate your result.
 export const validateOutput = (output: Output) => {
