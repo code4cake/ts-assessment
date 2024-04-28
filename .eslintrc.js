@@ -10,6 +10,7 @@ module.exports = {
   ],
   rules: {
     '@typescript-eslint/no-unused-vars': [
+      // allows for the use of unused variables that start with an underscore
       'error',
       {
         args: 'all',

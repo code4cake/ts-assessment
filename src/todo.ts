@@ -5,10 +5,10 @@ import type { ConvertedAnnotation, ConvertedEntity, Output } from './types/outpu
 import { OutputSchema } from './schemas/output.schema';
 import { logger } from './utils/logger';
 
-interface EntityStore {
+export interface EntityStore {
   [key: string]: ConvertedEntity;
 }
-interface AnnotationStore {
+export interface AnnotationStore {
   [key: string]: ConvertedAnnotation;
 }
 
@@ -16,7 +16,6 @@ interface AnnotationStore {
 // HINT: Make use of the helper library "lodash"
 export const convertInput = (input: Input): Output => {
   const documents = _.map(input.documents, (document) => {
-    // const annotations: ConvertedAnnotation[] = [];
     // TODO: map the entities to the new structure and sort them based on the property "name"
     // Make sure the nested children are also mapped and sorted
     const entityStore = createEmptyEntityStore(document.entities);
@@ -27,7 +26,7 @@ export const convertInput = (input: Input): Output => {
     // TODO: map the annotations to the new structure and sort them based on the property "index"
     // Make sure the nested children are also mapped and sorted
     const annotationStore = createEmptyAnnotationStore(document.annotations, entityStore);
-    const processedAnnotationsRefs = processAnnotations(document.annotations, annotationStore);
+    const processedAnnotationsRefs = processAnnotationsRefs(document.annotations, annotationStore);
     const sortedAnnotations = sortAnnotations(processedAnnotationsRefs);
 
     return {
@@ -40,7 +39,10 @@ export const convertInput = (input: Input): Output => {
   return { documents };
 };
 
-const processAnnotations = (annotations: Annotation[], annotationStore: AnnotationStore): ConvertedAnnotation[] => {
+export const processAnnotationsRefs = (
+  annotations: Annotation[],
+  annotationStore: AnnotationStore,
+): ConvertedAnnotation[] => {
   const processedAnnotations: ConvertedAnnotation[] = [];
 
   _.forEach(annotations, (annotation) => {
@@ -53,7 +55,7 @@ const processAnnotations = (annotations: Annotation[], annotationStore: Annotati
   return processedAnnotations;
 };
 
-const createEmptyEntityStore = (entities: Entity[]): EntityStore => {
+export const createEmptyEntityStore = (entities: Entity[]): EntityStore => {
   const entityStore: EntityStore = {};
   _.forEach(entities, (entity) => {
     entityStore[entity.id] = {
@@ -67,7 +69,7 @@ const createEmptyEntityStore = (entities: Entity[]): EntityStore => {
   return entityStore;
 };
 
-const createEmptyAnnotationStore = (annotations: Annotation[], entityStore: EntityStore): AnnotationStore => {
+export const createEmptyAnnotationStore = (annotations: Annotation[], entityStore: EntityStore): AnnotationStore => {
   const annotationStore: AnnotationStore = {};
 
   _.forEach(annotations, (annotation) => {
