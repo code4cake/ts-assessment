@@ -1,17 +1,10 @@
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 
 import type { Input } from './types/input';
 import inputJson from './input.json';
 import outputJson from './output.json';
 import { convertInput, sortAnnotations, sortEntities, validateOutput } from './todo';
-import {
-  // validOutputMock,
-  // invalidOutputMock,
-  mockAnnotations,
-  mockEntities,
-  validOutput,
-  invalidOutput,
-} from './__mocks__/output.mock';
+import { validOutputMock, invalidOutputMock, mockAnnotations, mockEntities } from './__mocks__/output.mock';
 
 describe('the convertInput function', () => {
   it('should have the right entities length after conversion', () => {
@@ -46,52 +39,30 @@ describe('the sorting functions sortEntities and sortAnnotations', () => {
 });
 
 // BONUS: Write tests that validates the output json. Use the function you have written in "src/todo.ts".
-// describe('validateOutput function', () => {
-//   it('should validate successfully for valid output', (done) => {
-//     validateOutput(validOutputMock)
-//       .then((result) => {
-//         assert.isTrue(result);
-//         done();
-//       })
-//       .catch((err) => {
-//         done(err);
-//       });
-//   });
-
-//   it('should throw an error for invalid output', (done) => {
-//     validateOutput(invalidOutputMock)
-//       .then((result) => {
-//         assert.isFalse(result);
-//         done();
-//       })
-//       .catch((err) => {
-//         done(err);
-//       });
-//   });
-// });
-
-// describe('the convert functions convertEntity and convertAnnotation', () => {
-//   // TODO: write  tests for the convert functions
-// });
-
 describe('validateOutput function', () => {
-  it('should return true for valid output', () => {
-    const result = validateOutput(validOutput);
-    expect(result).to.be.true;
+  it('should validate successfully for valid output', (done) => {
+    validateOutput(validOutputMock)
+      .then((result) => {
+        assert.isTrue(result);
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
   });
 
-  it('should return false for invalid output', () => {
-    const result = validateOutput(invalidOutput);
-    expect(result).to.be.false;
+  it('should throw an error for invalid output', (done) => {
+    validateOutput(invalidOutputMock)
+      .then((result) => {
+        assert.isFalse(result);
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
   });
 });
 
-// describe('validateOutput2', () => {
-//   it('should validate correct output successfully', async () => {
-//     await expect(validateOutput2(validOutput)).resolves.toBeUndefined();
-//   });
-
-//   it('should throw an error for incorrect output', async () => {
-//     await expect(validateOutput2(invalidOutput)).rejects.toThrow();
-//   });
-// });
+describe('the convert functions convertEntity and convertAnnotation', () => {
+  // TODO: write  tests for the convert functions
+});

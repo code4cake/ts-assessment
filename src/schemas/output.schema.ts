@@ -14,7 +14,7 @@ const EntityIdNameSchema: ObjectSchema<ConvertedEntityIdName> = object({
   name: string().required(),
 });
 
-// [FIXME]: Fix issue with the value type allowing null and using the yup.mixed
+// [FIXME]: Fix issue with the value type allowing null and using the yup.mixed<AnyPresentValue>
 // @ts-expect-error - Type 'null' is not assignable to type 'string | number | undefined'.
 const ConvertedAnnotationSchema: ObjectSchema<ConvertedAnnotation> = object({
   id: string().required(),

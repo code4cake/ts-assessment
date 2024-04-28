@@ -1,63 +1,6 @@
 import { ENTITY_CLASS, ENTITY_TYPE } from '../types/input';
 import type { ConvertedAnnotation, ConvertedEntity, Output } from '../types/output';
 
-export const validOutput: Output = {
-  documents: [
-    {
-      id: '65afd249bd19b2cdb0eff56d',
-      entities: [
-        {
-          id: '65afd45bdb285265fae6ca90',
-          name: 'article',
-          type: 'REGULAR',
-          class: 'RELATION',
-          children: [
-            // truncated for brevity...
-          ],
-        },
-        // More entities and their children...
-      ],
-      annotations: [
-        {
-          id: '65afd64a45977d96c2ebc9fc',
-          entity: {
-            id: '65afd280db285265fae6c728',
-            name: 'invoice number',
-          },
-          value: 'INV 20277107',
-          index: 55,
-          children: [],
-        },
-        // More annotations...
-      ],
-    },
-  ],
-};
-
-// Invalid output, here we might remove a required 'id' or provide an invalid 'type'
-export const invalidOutput = {
-  documents: [
-    {
-      id: '', // Invalid as 'id' should not be empty
-      entities: [
-        {
-          id: '65afd45bdb285265fae6ca90',
-          name: 'article',
-          type: 'INVALID_TYPE', // Invalid type
-          class: 'RELATION',
-          children: [
-            // truncated for brevity...
-          ],
-        },
-        // More entities and their children...
-      ],
-      annotations: [
-        // Invalid or missing annotations...
-      ],
-    },
-  ],
-} as unknown as Output; // typecasting to allow invalid data
-
 export const mockEntities: ConvertedEntity[] = [
   { id: '1', name: 'article total', type: ENTITY_TYPE.NUMBER, class: ENTITY_CLASS.TEXT, children: [] },
   { id: '2', name: 'article color', type: ENTITY_TYPE.REGULAR, class: ENTITY_CLASS.TEXT, children: [] },
@@ -73,13 +16,13 @@ export const mockAnnotations: ConvertedAnnotation[] = [
 export const validOutputMock: Output = {
   documents: [
     {
-      id: '',
+      id: '65afd249bd19b2cdb0eff56d',
       entities: [
         {
           id: '65afd45bdb285265fae6ca90',
           name: 'article',
           type: 'REGULAR',
-          class: 'TEXT',
+          class: 'RELATION',
           children: [
             {
               id: '65afd42fdb285265fae6ca62',
@@ -101,7 +44,7 @@ export const validOutputMock: Output = {
       ],
       annotations: [
         {
-          id: '65afd42fdb285265fae6ca61',
+          id: '65afd64a45977d96c2ebc9fc',
           entity: {
             id: '65afd280db285265fae6c728',
             name: 'invoice number',
@@ -118,19 +61,19 @@ export const validOutputMock: Output = {
 export const invalidOutputMock = {
   documents: [
     {
-      id: '',
+      id: '', // Invalid as 'id' should not be empty
       entities: [
         {
           id: '65afd45bdb285265fae6ca90',
           name: 'article',
           type: 'INVALID_TYPE', // Invalid type
-          class: 'INVALID_RELATION', // Invalid class
+          class: 'RELATION',
           children: [
             {
               id: '65afd42fdb285265fae6ca62',
               name: 'article details',
-              type: '',
-              class: '',
+              type: '', // Invalid type
+              class: '', // Invalid class
               children: [
                 {
                   id: '65afd3a8db285265fae6c945',
