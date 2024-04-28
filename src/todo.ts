@@ -5,10 +5,10 @@ import type { ConvertedAnnotation, ConvertedEntity, Output } from './types/outpu
 import { OutputSchema } from './schemas/output.schema';
 import { logger } from './utils/logger';
 
-interface EntityMap {
+interface EntityStore {
   [key: string]: ConvertedEntity;
 }
-interface AnnotationMap {
+interface AnnotationStore {
   [key: string]: ConvertedAnnotation;
 }
 
@@ -16,54 +16,23 @@ interface AnnotationMap {
 // HINT: Make use of the helper library "lodash"
 export const convertInput = (input: Input): Output => {
   const documents = _.map(input.documents, (document) => {
-    const entityMap: EntityMap = {},
-      annotationMap: AnnotationMap = {},
-      annotations: ConvertedAnnotation[] = [];
-
+    // const annotations: ConvertedAnnotation[] = [];
     // TODO: map the entities to the new structure and sort them based on the property "name"
     // Make sure the nested children are also mapped and sorted
-    _.forEach(document.entities, (entity) => {
-      entityMap[entity.id] = {
-        id: entity.id,
-        name: entity.name,
-        type: entity.type,
-        class: entity.class,
-        children: [],
-      };
-    });
+    const entityStore = createEmptyEntityStore(document.entities);
+    const convertedAndSortedEntities = _.map(document.entities, (entity) => convertEntity(entity, entityStore)).sort(
+      sortEntities,
+    );
 
     // TODO: map the annotations to the new structure and sort them based on the property "index"
     // Make sure the nested children are also mapped and sorted
-    _.forEach(document.annotations, (annotation) => {
-      if (entityMap[annotation.entityId]) {
-        annotationMap[annotation.id] = {
-          id: annotation.id,
-          entity: {
-            id: entityMap[annotation.entityId].id,
-            name: entityMap[annotation.entityId].name,
-          },
-          value: annotation.value,
-          index: annotation.indices?.length ? annotation.indices[0].start : -1,
-          children: [],
-        };
-      }
-    });
-
-    const entities = _.map(document.entities, (entity) => convertEntity(entity, entityMap)).sort(sortEntities);
-
-    _.forEach(document.annotations, (annotation) => {
-      if (annotation.refs.length === 0) {
-        annotations.push(convertAnnotation(annotation, annotationMap));
-      } else {
-        convertAnnotation(annotation, annotationMap);
-      }
-    });
-
-    const sortedAnnotations = sortAnnotations(annotations);
+    const annotationStore = createEmptyAnnotationStore(document.annotations, entityStore);
+    const processedAnnotationsRefs = processAnnotations(document.annotations, annotationStore);
+    const sortedAnnotations = sortAnnotations(processedAnnotationsRefs);
 
     return {
       id: document.id,
-      entities,
+      entities: convertedAndSortedEntities,
       annotations: sortedAnnotations,
     };
   });
@@ -71,25 +40,72 @@ export const convertInput = (input: Input): Output => {
   return { documents };
 };
 
+const processAnnotations = (annotations: Annotation[], annotationStore: AnnotationStore): ConvertedAnnotation[] => {
+  const processedAnnotations: ConvertedAnnotation[] = [];
+
+  _.forEach(annotations, (annotation) => {
+    if (annotation.refs.length === 0) {
+      processedAnnotations.push(convertAnnotation(annotation, annotationStore));
+    } else {
+      convertAnnotation(annotation, annotationStore);
+    }
+  });
+  return processedAnnotations;
+};
+
+const createEmptyEntityStore = (entities: Entity[]): EntityStore => {
+  const entityStore: EntityStore = {};
+  _.forEach(entities, (entity) => {
+    entityStore[entity.id] = {
+      id: entity.id,
+      name: entity.name,
+      type: entity.type,
+      class: entity.class,
+      children: [],
+    };
+  });
+  return entityStore;
+};
+
+const createEmptyAnnotationStore = (annotations: Annotation[], entityStore: EntityStore): AnnotationStore => {
+  const annotationStore: AnnotationStore = {};
+
+  _.forEach(annotations, (annotation) => {
+    if (entityStore[annotation.entityId]) {
+      annotationStore[annotation.id] = {
+        id: annotation.id,
+        entity: {
+          id: entityStore[annotation.entityId].id,
+          name: entityStore[annotation.entityId].name,
+        },
+        value: annotation.value,
+        index: annotation.indices?.length ? annotation.indices[0].start : -1,
+        children: [],
+      };
+    }
+  });
+  return annotationStore;
+};
+
 // HINT: you probably need to pass extra argument(s) to this function to make it performant
-const convertEntity = (entity: Entity, entityMap: EntityMap): ConvertedEntity => {
+const convertEntity = (entity: Entity, entityStore: EntityStore): ConvertedEntity => {
   _.forEach(entity.refs, (refId: string) => {
-    const parentEntity = entityMap[refId];
+    const parentEntity = entityStore[refId];
 
     if (parentEntity) {
-      parentEntity.children.push(entityMap[entity.id]);
+      parentEntity.children.push(entityStore[entity.id]);
     }
   });
 
-  entityMap[entity.id].children.sort(sortEntities);
+  entityStore[entity.id].children.sort(sortEntities);
 
-  return entityMap[entity.id];
+  return entityStore[entity.id];
 };
 
 // HINT: you probably need to pass extra argument(s) to this function to make it performant.
-const convertAnnotation = (annotation: Annotation, annotationMap: AnnotationMap): ConvertedAnnotation => {
+const convertAnnotation = (annotation: Annotation, annotationStore: AnnotationStore): ConvertedAnnotation => {
   try {
-    const annotationEntry = annotationMap[annotation.id];
+    const annotationEntry = annotationStore[annotation.id];
     if (!annotationEntry) {
       throw new Error(`Annotation with ID ${annotation.id} not found.`);
     }
@@ -107,7 +123,7 @@ const convertAnnotation = (annotation: Annotation, annotationMap: AnnotationMap)
     }
 
     _.forEach(annotation.refs, (refId: string) => {
-      const refAnnotation = annotationMap[refId];
+      const refAnnotation = annotationStore[refId];
       if (!refAnnotation) {
         throw new Error(`Reference annotation with ID ${refId} not found.`);
       }
