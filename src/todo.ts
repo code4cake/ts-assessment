@@ -59,12 +59,12 @@ export const convertInput = (input: Input): Output => {
       }
     });
 
-    annotations.sort(sortAnnotations);
+    const sortedAnnotations = sortAnnotations(annotations);
 
     return {
       id: document.id,
       entities,
-      annotations,
+      annotations: sortedAnnotations,
     };
   });
 
@@ -73,9 +73,11 @@ export const convertInput = (input: Input): Output => {
 
 // HINT: you probably need to pass extra argument(s) to this function to make it performant
 const convertEntity = (entity: Entity, entityMap: EntityMap): ConvertedEntity => {
-  entity.refs.forEach((refId: string) => {
-    if (entityMap[refId]) {
-      entityMap[refId].children.push({ ...entityMap[entity.id] });
+  _.forEach(entity.refs, (refId: string) => {
+    const parentEntity = entityMap[refId];
+
+    if (parentEntity) {
+      parentEntity.children.push(entityMap[entity.id]);
     }
   });
 
@@ -87,30 +89,34 @@ const convertEntity = (entity: Entity, entityMap: EntityMap): ConvertedEntity =>
 // HINT: you probably need to pass extra argument(s) to this function to make it performant.
 const convertAnnotation = (annotation: Annotation, annotationMap: AnnotationMap): ConvertedAnnotation => {
   try {
-    if (!annotationMap[annotation.id]) {
+    const annotationEntry = annotationMap[annotation.id];
+    if (!annotationEntry) {
       throw new Error(`Annotation with ID ${annotation.id} not found.`);
     }
 
-    if (annotation.indices && annotation.indices.length > 0) {
-      annotationMap[annotation.id].index = annotation.indices[0].start;
-    } else if (annotationMap[annotation.id].children.length > 0) {
-      annotationMap[annotation.id].children.sort(sortAnnotations);
-      annotationMap[annotation.id].index = annotationMap[annotation.id].children[0].index;
+    if (_.isEmpty(annotation.indices)) {
+      if (_.isEmpty(annotationEntry.children)) {
+        throw new Error('Cannot assign index for annotation.');
+      } else {
+        const sortedChildren = sortAnnotations(annotationEntry.children);
+        annotationEntry.children = sortedChildren;
+        annotationEntry.index = sortedChildren[0].index;
+      }
     } else {
-      throw new Error('Cannot assign index for annotation.');
+      annotationEntry.index = annotation.indices?.[0]?.start ?? -1;
     }
 
-    annotation.refs.forEach((refId: string) => {
-      if (!annotationMap[refId]) {
+    _.forEach(annotation.refs, (refId: string) => {
+      const refAnnotation = annotationMap[refId];
+      if (!refAnnotation) {
         throw new Error(`Reference annotation with ID ${refId} not found.`);
       }
-
-      annotationMap[refId].children.push(annotationMap[annotation.id]);
+      refAnnotation.children.push(annotationEntry);
     });
 
-    return annotationMap[annotation.id];
+    return annotationEntry;
   } catch (error) {
-    error instanceof Error && logger.error(`Error converting annotation: ${error.message}`);
+    logger.error(`Error converting annotation: ${error}`);
     throw error;
   }
 };
@@ -119,17 +125,9 @@ export const sortEntities = (entityA: ConvertedEntity, entityB: ConvertedEntity)
   return entityA.name.localeCompare(entityB.name);
 };
 
-export const sortAnnotations = (annotationA: ConvertedAnnotation, annotationB: ConvertedAnnotation): number => {
-  return annotationA.index - annotationB.index;
+export const sortAnnotations = (annotations: ConvertedAnnotation[]): ConvertedAnnotation[] => {
+  return _.sortBy(annotations, 'index');
 };
-
-// export const sortEntities = (entities: ConvertedEntity[]): ConvertedEntity[] => {
-//   return _.sortBy(entities, 'name');
-// };
-
-// export const sortAnnotations = (annotations: ConvertedAnnotation[]): ConvertedAnnotation[] => {
-//   return _.sortBy(annotations, 'index');
-// };
 
 // BONUS: Create validation function that validates the result of "convertInput". Use yup as library to validate your result.
 export const validateOutput = (output: Output) => {

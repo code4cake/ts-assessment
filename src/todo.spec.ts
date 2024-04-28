@@ -3,8 +3,8 @@ import { expect, assert } from 'chai';
 import type { Input } from './types/input';
 import inputJson from './input.json';
 import outputJson from './output.json';
-import { convertInput, validateOutput } from './todo';
-import { validOutputMock, invalidOutputMock } from './__mocks__/output.mock';
+import { convertInput, validateOutput, sortAnnotations, sortEntities } from './todo';
+import { validOutputMock, invalidOutputMock, mockAnnotations, mockEntities } from './__mocks__/output.mock';
 
 describe('the convertInput function', () => {
   it('should have the right entities length after conversion', () => {
@@ -26,17 +26,17 @@ describe('the convertInput function', () => {
   });
 });
 
-// describe('the sorting functions sortEntities and sortAnnotations', () => {
-//   it('should sort entities by "name" when sortEntities is called', () => {
-//     mockEntities.sort(sortEntities);
-//     expect(mockEntities.map((e) => e.name)).to.deep.equal(['article', 'article color', 'article total']);
-//   });
+describe('the sorting functions sortEntities and sortAnnotations', () => {
+  it('should sort entities by "name" when sortEntities is called', () => {
+    mockEntities.sort(sortEntities);
+    expect(mockEntities.map((e) => e.name)).to.deep.equal(['article', 'article color', 'article total']);
+  });
 
-//   it('should sort annotations by "index" when sortAnnotations is called', () => {
-//     mockAnnotations.sort(sortAnnotations);
-//     expect(mockAnnotations.map((a) => a.index)).to.deep.equal([72, 88, 96]);
-//   });
-// });
+  it('should sort annotations by "index" when sortAnnotations is called', () => {
+    const sortedAnnotations = sortAnnotations(mockAnnotations);
+    expect(sortedAnnotations.map((a) => a.index)).to.deep.equal([72, 88, 96]);
+  });
+});
 
 // BONUS: Write tests that validates the output json. Use the function you have written in "src/todo.ts".
 describe('validateOutput function', () => {
