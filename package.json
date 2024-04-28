@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --config .mocharc.yaml",
-    "test:watch": "mocha --watch --config .mocharc.yaml"
+    "test:watch": "mocha --config .mocharc.yaml -- --watch"
   },
   "engines": {
     "npm": ">=9.8.1",

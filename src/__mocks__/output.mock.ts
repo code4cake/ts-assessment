@@ -1,17 +1,27 @@
-import { ENTITY_CLASS, ENTITY_TYPE } from '../types/input';
+import { Annotation, Entity, ENTITY_CLASS, ENTITY_TYPE } from '../types/input';
 import type { ConvertedAnnotation, ConvertedEntity, Output } from '../types/output';
 
-export const mockEntities: ConvertedEntity[] = [
+export const mockConvertedEntities: ConvertedEntity[] = [
   { id: '1', name: 'article total', type: ENTITY_TYPE.NUMBER, class: ENTITY_CLASS.TEXT, children: [] },
   { id: '2', name: 'article color', type: ENTITY_TYPE.REGULAR, class: ENTITY_CLASS.TEXT, children: [] },
   { id: '3', name: 'article', type: ENTITY_TYPE.REGULAR, class: ENTITY_CLASS.RELATION, children: [] },
 ];
 
-export const mockAnnotations: ConvertedAnnotation[] = [
+export const mockConvertedAnnotations: ConvertedAnnotation[] = [
   { id: 'a1', entity: { id: '1', name: 'article total' }, value: 394.68, index: 88, children: [] },
   { id: 'a2', entity: { id: '2', name: 'article color' }, value: 'White', index: 96, children: [] },
   { id: 'a3', entity: { id: '3', name: 'article' }, value: null, index: 72, children: [] },
 ];
+
+export const mockAnnotations = [
+  { id: 'a1', entityId: '1', refs: [], value: 'Test1', indices: [{ start: 10 }] },
+  { id: 'a2', entityId: '2', refs: ['a1'], value: 'Test2', indices: [{ start: 20 }] },
+] as unknown as Annotation[];
+
+export const mockEntities = [
+  { id: '1', name: 'Entity1', type: 'REGULAR', class: 'RELATION' },
+  { id: '2', name: 'Entity2', type: 'REGULAR', class: 'RELATION' },
+] as unknown as Entity[];
 
 export const validOutputMock: Output = {
   documents: [
