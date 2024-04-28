@@ -120,14 +120,28 @@ export const sortAnnotations = (annotationA: ConvertedAnnotation, annotationB: C
 };
 
 // BONUS: Create validation function that validates the result of "convertInput". Use yup as library to validate your result.
-export const validateOutput = (output: Output) => {
-  return OutputSchema.validate(output, { abortEarly: false })
-    .then(() => {
-      console.log('Validation successful!');
-      return true;
-    })
-    .catch((error) => {
-      console.error('Validation failed: ', error);
-      return false;
-    });
+// export const validateOutput = (output: Output) => {
+//   return OutputSchema.validate(output, { abortEarly: false })
+//     .then(() => {
+//       console.log('Validation successful!');
+//       return true;
+//     })
+//     .catch((error) => {
+//       console.error('Validation failed: ', error);
+//       return false;
+//     });
+// };
+
+export const validateOutput = (output: Output): boolean => {
+  return OutputSchema.isValidSync(output);
+};
+
+export const validateOutput2 = async (output: Output) => {
+  try {
+    await OutputSchema.validate(output, { abortEarly: false });
+    console.log('Validation successful!');
+  } catch (error) {
+    console.error('Validation failed: ', error);
+    throw error;
+  }
 };
